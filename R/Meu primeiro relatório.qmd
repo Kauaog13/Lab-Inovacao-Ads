@@ -1,0 +1,133 @@
+---
+title: "Álgebra Matricial"
+subtitle: Lições na linguagem R
+author:
+  - name: Kauã Oliveira Gonçalves
+    email: kauaogsenac@gmail.com
+    affiliation: 
+      - id: Faculdade SENAC DF
+        name: Faculdade SENAC DF
+date: last-modified
+date-format: "DD/MM/YYYY"
+format:
+  html:
+    code-fold: show
+    code-summary: "Ocultar/mostrar"
+    code-copy: true
+    number-sections: false
+    toc: true
+    toc-depth: 4
+    toc-location: left
+    toc-title: Sumário
+    title-block-banner: "#057bb4"
+    embed-resources: true
+    css: styles.css
+  pdf:
+    include-in-header: 
+      text: |
+execute:
+  warning: false #Alerta
+  echo: true #Mostra ou não o codigo, o resultado para aparecer
+  eval: true #Execução do codigo, dentro do HTML ele não vai aparecer se estiver false
+  message: false #sugestão de codigos
+editor: source
+editor_options: 
+  chunk_output_type: inline
+reference-location: margin
+---
+
+## 1. Pacotes requeridos
+Esta seção apresenta a instalação dos pacotes necessarios para executar os meus codigos.      
+
+```{r}
+#| echo: false
+#| eval: true
+#| message: false
+#| warning: false
+
+
+# devtools::install_github("yutannihilation/ggsflabel")
+
+   # Testa se o pacote "pacman" está instalado. Se necessário, faz a instalação
+if (!require(pacman)) install.packages("pacman")
+
+pacman::p_load(tidyverse,   # Família de pacotes para manipulação de dados
+               kableExtra,
+               rmarkdown,
+               dplyr,
+               RColorBrewer,
+               ggplot2,
+               Viridis,
+               sf)
+
+
+
+options(scipen = 999)
+```
+
+
+## 2. Como criar um dataframe dentro do R
+A tabela abaixo apresenta um dataframe com dados sobre os estados do Nodeste do Brasil.
+
+```{r}
+# Criando um dataframe com estados do Nordeste, capitais, população e área
+nordeste <- data.frame(
+  Estado = c("Alagoas", "Bahia", "Ceará", "Maranhão",      "Paraíba","Pernambuco", "Piauí", "Rio Grande do Norte", "Sergipe"),
+  
+  Capital = c( "Maranhão", "Salvador", "Fortaleza", "São Luís", "João Pessoa", "Recife", "Teresina", "Natal", "Aracaju"),
+  
+  Populacao = c(3134946, 14930634, 8941240, 6894032, 3999415,
+                9674793, 3273227, 3560907, 2318822),
+  
+  Area_km2 = c(27778.506, 564733.177, 148920.472, 331937.450, 56467.242, 
+               98311.616, 251577.738, 52796.791, 21910.348)
+)
+
+# Exibindo o dataframe
+nordeste
+```
+
+## 3.Grafico sobre a população dos estados
+O grafico abaixo representa as populações dos estados do Nordeste do Brasil.
+
+```{r}
+# Criando o gráfico de barras
+data(nordeste)
+ggplot(nordeste, aes(x = reorder(Estado, -Populacao), y = Populacao))+
+  geom_bar(stat = "identity", fill= "steelblue")+
+  theme_classic() +
+  xlab("Estado") +
+  ylab("População") +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1)) #Gira o nome em 45 graus
+```
+
+
+## 4. Formatação da tabela dos estados do nordeste do Brasil
+A tabela abaixo apresenta o dataframe acima formatado
+
+```{r}
+tabela_estados <- kable(nordeste,
+                        caption = "<span style='font-size: 24px; text-align: center; bold = TRUE; display: block;'>Tabela 1: Estados do Nordeste</span>",
+                        align = "c", 
+                        col.names = c("Estado", "Capital", "Area(km2)", "População")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+                full_width = FALSE) %>%
+  row_spec(0, bold = TRUE, background = "D3D3D3")
+  
+tabela_estados
+```
+
+## 5. Grafico sobre a area dos estados
+O grafico abaixo apresenta as areas (em km2) dos estados do Nordeste do brasil.
+
+```{r}
+ggplot(data = nordeste, aes(x = reorder(Estado, +Area_km2), y = Area_km2)) +
+  theme_classic() +
+  coord_flip() + #coloca o grafico na horizontal
+  geom_col() +
+  xlab("Estado") +
+  ylab("Área (km²)") +
+  ggtitle("Área dos Estados do Nordeste") +
+  theme(plot.title = element_text(color = "darkblue", size = 15, face = "bold"),margin(10, 100, 10, 1))
+```
+
