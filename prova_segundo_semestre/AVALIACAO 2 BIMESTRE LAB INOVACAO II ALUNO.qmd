@@ -1,0 +1,256 @@
+---
+title: "Faculdade Senac DF - Laboratório de Inovação II"
+subtitle: Avaliação 2º bimestre de 2025.1
+author:
+  - name: Victória Ferreira Santos, Kauâ Oliveira Gonçalves
+    email: victoria.senac.13@gmail.com, kauaogsenac@gmail.com
+    affiliation: 
+      - id: Faculdade SENAC DF
+        name: Faculdade SENAC DF
+date: last-modified
+date-format: "DD/MM/YYYY"
+format:
+  html:
+    code-fold: show
+    code-summary: "Ocultar/mostrar"
+    code-copy: true
+    number-sections: false
+    toc: true
+    toc-depth: 4
+    toc-location: left
+    toc-title: Sumário
+    title-block-banner: "#478E43"
+    embed-resources: true
+    css: styles.css
+  pdf:
+    include-in-header: 
+      text: |
+execute:
+  warning: false
+  echo: true
+  eval: true
+  message: false
+editor: source
+editor_options: 
+  chunk_output_type: inline
+reference-location: margin
+---
+
+
+# 🧪 Avaliação Prática – 2º bimestre de 2025.1
+
+> Disciplina: Laboratório de Inovação II 
+> Professor: Luiz Oliveira  
+> Duração: 3h | Valor: 7,0 pontos  
+> Entrega: Arquivo `.html` renderizado a partir deste `.qmd`
+
+
+# 🧪 Instruções gerais
+
+> Você deve trabalhar com o dataset fornecido chamado milsa.csv.
+
+O dataset fornecido contém informações de 36 funcionários da empresa Milsa, com variáveis que descrevem características demográficas, profissionais e salariais. As variáveis presentes são: identificação do funcionário, estado civil (solteiro ou casado), nível de escolaridade (1º Grau, 2º Grau ou Superior), número de filhos (com alguns valores faltando – NA), salário mensal em mil reais, idade em anos, tempo na empresa em meses e região de trabalho (capital, interior ou outro). Este conjunto de dados permite análises descritivas básicas, como distribuição salarial, composição familiar e grau de instrução dos colaboradores, além da criação de tabelas e gráficos para melhor visualização das informações.
+
+> Ao final da avaliação, você deverá renderizar seu documento para HTML e enviar o arquivo resultante no Moodle.
+> A avaliação tem como foco práticas de importação de dados, limpeza, formatação de tabelas e visualização gráfica.
+
+---
+
+
+## Instalação e carregamento de bibliotecas necessárias à realização das tarefas
+
+```{r}
+
+#| echo: false
+#| eval: true
+#| message: false
+#| warning: false
+
+
+# devtools::install_github("yutannihilation/ggsflabel")
+
+   # Testa se o pacote "pacman" está instalado. Se necessário, faz a instalação
+if (!require(pacman)) install.packages("pacman")
+
+pacman::p_load(tidyverse,   # Família de pacotes para manipulação de dados
+               kableExtra,
+               rmarkdown,
+               ggplot2,
+               ggthemes,
+               skimr,
+               corrplot,
+               DataExplorer,
+               httr,
+               jsonlite,
+               lubridate,
+               xlsx,
+               readr,
+               dplyr)
+
+
+options(scipen = 999)
+
+```
+
+
+## 📌 Questão 1 – Importação do Dataset (1 ponto)
+
+- Carregue o dataset milsa.csv para o RStudio.
+- Exiba as primeiras 6 linhas do dataset usando a função head().
+- Verifique a estrutura das variáveis com a função str().
+
+```{r}
+## Carregar o dataset
+
+dataset <- read_csv("milsa.csv")
+
+
+# Exibir primeiras linhas
+
+head(dataset)
+
+
+# Estrutura das variáveis
+
+str(dataset)
+
+
+```
+
+
+## 📌 Questão 2 – Limpeza e Organização do Dataset (2,0 pontos)
+
+> Renomeie as colunas do dataset para nomes mais descritivos:
+
+- Funcionario → ID
+- Est.civil → EstadoCivil
+- Inst → Escolaridade
+- Filhos → NumFilhos
+- Salario → SalarioMilReais
+- Anos → Idade
+- Meses → TempoEmpresaMeses
+- Regiao → RegiaoTrabalho
+
+> Converta a variável NumFilhos para tipo numérico, caso não esteja.
+
+> Crie uma nova variável chamada SalarioAnualMilReais, que seja igual ao salário mensal multiplicado por 12.
+
+```{r}
+
+# Renomear colunas
+dataset <- dataset %>%
+  rename(
+    ID = Funcionario,
+    EstadoCivil = Est.civil,
+    Escolaridade = Inst,
+    NumFilhos = Filhos,
+    SalarioMilReais = Salario,
+    Idade = Anos,
+    TempoEmpresaMeses = Meses,
+    RegiaoTrabalho = Regiao
+  )
+
+# Converter NumFilhos para numérico (NA permanece como NA)
+dataset$NumFilhos <- as.numeric(dataset$NumFilhos)
+
+# Criar nova variável: salário anual
+dataset$SalarioAnualMilReais <- dataset$SalarioMilReais * 12
+
+# Exibir primeiras linhas após limpeza
+head(dataset)
+  
+
+```
+
+
+## 📌 Questão 3 – Tabela Formatada com KableExtra (2 pontos)
+
+> Selecione as seguintes variáveis para compor uma tabela:
+
+- ID
+- EstadoCivil
+- Escolaridade
+- NumFilhos
+- SalarioMilReais
+- RegiaoTrabalho
+
+> Use o pacote kableExtra para formatar essa tabela com título, alinhamento adequado e cores suaves.
+
+
+```{r}
+
+# Selecionar variáveis de interesse
+
+tabela_interesse <- dataset %>%
+  select(ID, EstadoCivil, Escolaridade, NumFilhos, SalarioMilReais, RegiaoTrabalho)
+
+  
+
+# Formatar tabela
+
+tabela_interesse %>%
+  kbl(
+    caption = "Tabela 1 – Perfil dos Funcionários Milsa",
+    align = "c",
+    format = "html"
+  ) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+    full_width = FALSE,
+    position = "center"
+  ) %>%
+  row_spec(0, bold = TRUE, background = "#3FB839")
+
+
+```
+
+
+## 📌 Questão 4 – Gráfico de Barras (2.5 pontos)
+
+> Construa um gráfico de barras mostrando a média salarial por região de trabalho (RegiaoTrabalho).
+
+> Ordene as regiões pela média salarial (do menor para o maior).
+
+> Adicione título ao gráfico, rótulos aos eixos e cores diferenciadas por barra.
+
+
+```{r}
+
+# Calcular média salarial por região
+
+media_salario_regiao <- dataset %>%
+  group_by(RegiaoTrabalho) %>%
+  summarise(MediaSalario = mean(SalarioMilReais, na.rm = TRUE)) %>%
+  arrange(MediaSalario)
+
+  
+  
+
+# Plotar gráfico de barras
+
+ggplot(media_salario_regiao, aes(x = reorder(RegiaoTrabalho, MediaSalario), y = MediaSalario, fill = RegiaoTrabalho)) +
+  geom_bar(stat = "identity", width = 0.6) +
+  scale_fill_brewer(palette = "Pastel") +
+  labs(
+    title = "Média Salarial por Região",
+    x = "Região de Trabalho",
+    y = "Média Salarial (mil)",
+    fill = "Região"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 16, face = "bold"),
+    axis.title = element_text(size = 14),
+    axis.text = element_text(size = 12)
+  )
+
+
+```
+
+### ✏️ Seu comentário 
+**Com base no gráfico "Média Salarial por Região", observa-se que há uma diferença significativa na média salarial entre as regiões. A região classificada como "outro" apresenta a maior média salarial, superando os R$ 10.000 (mil). Em seguida, a região "interior" possui uma média salarial consideravelmente menor que "outro", mas ainda assim, superior à região "capital". A "capital" registra a menor média salarial, ficando abaixo dos R$ 5.000 (mil). De forma geral, a região "outro" é a que paga mais, e a diferença entre as médias salariais das três regiões é bastante notável, com "capital" sendo a de menor remuneração e "outro" a de maior.**
+
+
+
+
+
